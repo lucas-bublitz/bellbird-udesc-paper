@@ -7,11 +7,6 @@
   config,
   doc
 )={
-  let title = config.title
-  let authors = config.authors
-  let abstract = config.abstract
-  let epigraph = config.epigraph
-  let congratulations = config.congratulations
 
   //Dependências
   
@@ -27,37 +22,50 @@
     number-align: right + top,
     numbering: "1"
   )
-  show par: set block(spacing: 1em)
+  
   set par(
     justify: true, 
-    leading: 1em, 
-    first-line-indent: 3em
+    leading: 1em,
+    first-line-indent: (amount: 3em, all: true),
+    spacing: 1em,
   )
   set text(
     size: 12pt,
     lang: "pt",
-    hyphenate: false
-  )
-  set document(
-    title: title,
-    author: authors,
+    hyphenate: true,
+    font: "Liberation Sans"
+  ) 
+  set document( //Metadados
+    title: config.title,
+    author: config.author,
     date: auto
   )
+
+  // Funções auxiliares
+  // função de quebra de linha
+  let multiLinebreak(n) ={
+      for VALUE in range(0,n) {
+      linebreak()
+      }
+    }
 
   //Citações
   //Citação longa (a função nativa quotes() é usada para citação longa)
   show quote: it => {
-    par(it.body)
+    set text(size: 10pt)
+    linebreak()
+    pad(
+      left: 4cm,
+      par(leading: 0.65em, first-line-indent: 0em, it.body)
+    )
+    linebreak()
   }
    
   //Títulos (headings)
-  show heading: set block(spacing: 2em)
+  show heading: set block(above: 2em, below: 1em)
   show heading: it => {
     set text(12pt)
     it
-    // Gambiarra! (Faz com que o próximo parágrafo seja indentado!)
-    ""
-    v(-1em)
   }
   set heading(
     numbering: "1.1.1."
@@ -75,90 +83,92 @@
   show figure: it => {
     show ref: that => [Fonte: #cite(form: "prose", that.target)]
     it
-    ""
-    v(-1em)
   }
   // PARTE PRÉ-TEXTUAL
   
-  let credit() = text(oklch(0%, 0, 0deg, 0%))[Este documento utiliza o Modelo de Trabalhos Acadêmidos para UDESC, criado por Lucas Bublitz]
+  let credit() = text(oklch(0%, 0, 0deg, 0%))[Este documento utiliza o Modelo de Trabalhos Acadêmidos tUDESC] 
 
   //Capa
-  let cover() = { 
-  page(numbering: none)[
-      #set text(weight: "bold")
-      #set align(center)
-      UNIVERSIDADE DO ESTADO DE SANTA CATARINA – UDESC\
-      CENTRO DE CIÊNCIAS TECNOLÓGICAS – CCT\
-      DEPARTAMENTO DE ENGENHARIA ELÉTRICA – DEE\
-      #upper(authors)
-    
-      #place(horizon + center)[
-        #upper(block(title))
-      ]
-    
-      #place(bottom + center)[
-        #credit()\
-        JOINVILLE\
-        2024
-      ]
-    ]
-  }
+  let cover(title, campus, departament, author, city, year) = page(numbering: none, {
+      set text(weight: "bold")
+      set align(center)
+
+      [UNIVERSIDADE DO ESTADO DE SANTA CATARINA – UDESC\ ]
+      upper(campus)
+      linebreak()
+      upper(departament)
+
+      multiLinebreak(6)
+      upper(author)
+
+      place(horizon + center,
+        upper(title)
+      )
+
+      place(bottom + center, {
+        credit()
+        linebreak()
+        upper(city)
+        linebreak()
+        str(year)
+      })
+    })
 
   //Anverso (obverse)
-  let obverse() = page(numbering: none)[
-    #set align(center)
-    #v(3em)
-    #upper(authors)
-    #v(13em)
-    #upper(block(title))
-    #v(7em)
-    #pad(left: 8cm)[
-      #align(left)[
-        #par(justify: true)[
-          Artigo apresentado ao curso de graduação em direito do Centro Universitário - Católica de Santa Catarina, como requisito parcial para obtenção do título de Bacharel em Direito.\
-          \
-          Orientador: Dr. Prof. Jeison Heiler
-        ]
-      ]
-    ]
-    #place(bottom + center)[
-      JOINVILLE\
-      2024
-    ]
-  ]
+  let obverse(title, author, observe_text, city, year) = page(numbering: none, {
+    set align(center)
+    set text(weight: "bold")
+
+    upper(author)
+    multiLinebreak(13)
+
+    upper(title)
+    multiLinebreak(4)
+    pad(left: 8cm,
+      align(left,{
+        set text(weight: "regular")
+        par(leading: 0.65em, justify: true, first-line-indent: 0em, observe_text)
+      })
+    )
+    place(bottom + center, {
+      credit()
+      linebreak()
+      upper(city)
+      linebreak()
+      str(year)
+    })
+  })
 
   // Epígrafe (epigraph)
-  let epigraph() = page(numbering: none)[
-    #place(bottom + right)[
-      #box(width: 8cm)[
-       #align(left)[
-          _Somos por essa causa, essa somente,\
-          perdidos, mas nossa pena é só esta:\
-          sem esperança, ansiar eternamente"._\
-          \
-          (A Divina Comédia, Canto IV, 40-42, Dante Alighieri)
-        ]
-      ]
-    ]
-  ]
+  let epigraph() = page(numbering: none,
+    place(bottom + right,
+      box(width: 8cm,
+        align(left, {
+          config.epigraph
+          multiLinebreak(2)
+        })
+      )
+    )
+  )
 
   //Agradecimento
-  let acknowledgments() = page(numbering: none)[
-    #align(center, [*AGRADECIMENTOS*])
-    #v(2em)
-    #lorem(300)
-  ]
+  let acknowledgments(acknowledgments_text) = page(numbering: none, {
+    align(center, [*AGRADECIMENTOS*])
+    multiLinebreak(2)
+    parbreak()
+    acknowledgments_text
+  })
 
   //Abstract
-  let abstract(text) = page(numbering: none)[
-      #align(center, [*RESUMO*])
-      #v(1em)
-      #set par(leading: 0.40em, first-line-indent: 0em)
-      #text
-
-      *Palavras-chave*: Seguridade Social. Crítica do Direito. Direito.
-
-  ]
+  let abstract(text, keywords) = page(
+    numbering: none, {
+      set par(leading: 1em, first-line-indent: 0em)
+      align(center, [*RESUMO*])
+      multiLinebreak(2)
+      text
+      multiLinebreak(3)
+      [*Palavras-chave*: ];keywords.join("; ");[.]
+  })
   
   // Sumários
   // Sumários dos capítulos e derivados
@@ -171,7 +181,7 @@
             box({
               that.body.children.at(2) 
               box(width: 1fr, that.fill)
-                 box(width: 0.5em)
+              box(width: 0.5em)
               box(width: 1em,align(left,that.page))
             }, width: 1fr)
           }, height: auto)
@@ -213,10 +223,10 @@
 
 
   // PARTE PRÉ-TEXTUAL
-  cover()
-  obverse()
-  acknowledgments()
-  abstract(abstract)
+  cover(config.title, config.campus, config.departament, config.author, config.city, config.year)
+  obverse(config.title, config.author, config.obverse, config.city, config.year)
+  acknowledgments(config.acknowledgments)
+  abstract(config.abstract, config.keywords)
   epigraph()
   outline(title: [Lista de figuras], target: figure)
   outline()
