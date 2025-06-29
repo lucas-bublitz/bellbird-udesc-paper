@@ -1,10 +1,9 @@
-//tUDESC é um modelo trabalhos acadêmicos da UDESC
-//Não é um projeto oficial. 
+//Modelo trabalhos acadêmicos da UDESC
+//Não é um projeto oficial! 
 
-#import "macros.typ": *
-#import "template.typ": udesc
+#import "@preview/udesc:0.1.0": udesc
 
-#show: udesc.with(
+#show: udesc.with( 
   campus: [Centro de Ciências Tecnológicas -- CCT],
   departament: [PROGRAMA DE PÓS-GRADUAÇÃO – SIGLA OU NOME DO CURSdO],
   abstract: lorem(100),  
@@ -17,12 +16,12 @@
   acknowledgments : [Eu quero me agradecer por acreditar em mim mesmo, quero me agradecer por todo esse trabalho duro. Quero me agradecer por não tirar folgas. Quero me agradecer por nunca desistir. Quero me agradecer por ser generoso e sempre dar mais do que recebo. Quero me agradecer por tentar sempre fazer mais o certo do que o errado. Quero me agradecer por ser eu mesmo o tempo inteiro.],
   keywords: ("Primeira", "Segunda", "Terceira")
 )
-
+ 
 
 = Introdução
 
 #lorem(100)
-
+asd
 #lorem(50)
 
 #lorem(100)
@@ -39,3 +38,4 @@
 
 #lorem(100)
 
+#bibliography("bibliography.bib")
