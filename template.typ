@@ -4,7 +4,17 @@
 // O autor se reserva ao direito de ser citado quanto parte, ou a integralidade, deste documento for utilizado por terceiros, não assumindo qualquer risco comercial, nem exigindo qualquer.
 
 #let udesc(
-  config,
+  campus: [],
+  departament: [],
+  author: "",
+  title: [],
+  city: [],
+  year: 0,
+  obverse: [],
+  abstract: none,
+  epigraph: none,
+  acknowledgments: none,
+  keywords: (),
   doc
 )={
 
@@ -36,47 +46,87 @@
     font: "Liberation Sans"
   ) 
   set document( //Metadados
-    title: config.title,
-    author: config.author,
+    title: title,
+    author: author,
     date: auto
   )
 
   // Funções auxiliares
-  // função de quebra de linha
+  
   let multiLinebreak(n) ={
-      for VALUE in range(0,n) {
-      linebreak()
-      }
+    for _ in range(0,n) {
+    linebreak()
     }
+  }
+
+  let to-string(content) = {
+    if content.has("text") {
+      if type(content.text) == "string" {
+        content.text
+      } else {
+        to-string(content.text)
+      }
+    } else if content.has("children") {
+      content.children.map(to-string).join("")
+    } else if content.has("body") {
+      to-string(content.body)
+    } else if content == [ ] {
+      " "
+    }
+  }
 
   //Citações
-  //Citação longa (a função nativa quotes() é usada para citação longa)
-  show quote: it => {
+  //A função nativa quotes() é usada tanto para citações longas quanto para curtas de forma automática.
+  
+  let longQuote(quote_text) = {
     set text(size: 10pt)
     linebreak()
     pad(
       left: 4cm,
-      par(leading: 0.65em, first-line-indent: 0em, it.body)
+      par(leading: 0.65em, first-line-indent: 0em, quote_text)
     )
     linebreak()
   }
+
+  show quote: it => {
+    if to-string(it.body).len() > 242 {
+      longQuote(it.body)
+    } else {
+      it
+    }
+  }
    
+  
+
   //Títulos (headings)
-  show heading: set block(above: 2em, below: 1em)
+  show heading: set block(above: 2em, below: 2em)
   show heading: it => {
     set text(12pt)
     it
   }
   set heading(
-    numbering: "1.1.1."
+    numbering: "1.1.1"
   )
-  show heading.where(level: 1): it => [
-    #pagebreak()
-    #upper(it)
-  ]
-  show heading.where(level: 2): it => text(weight: "regular")[
-    #upper(it)
-  ]
+
+  show heading: set text(weight: "regular")
+
+  show heading.where(level: 1): that => {
+    set text(weight: "bold")
+    upper(that)
+  }
+  show heading.where(level: 2): that => {
+    set text(weight: "regular")
+    upper(that)
+  }
+  show heading.where(level: 3): that => {
+    set text(weight: "bold")
+    that
+  }
+  show heading.where(level: 4): that => {
+    set text(weight: "regular")
+    [_ #that _]
+  }
+
 
   // Figuras (tabelas, imagens, gráficos....)
   set figure.caption(position: top)
@@ -89,33 +139,33 @@
   let credit() = text(oklch(0%, 0, 0deg, 0%))[Este documento utiliza o Modelo de Trabalhos Acadêmidos tUDESC] 
 
   //Capa
-  let cover(title, campus, departament, author, city, year) = page(numbering: none, {
-      set text(weight: "bold")
-      set align(center)
+  let coverPage(title, campus, departament, author, city, year) = page(numbering: none, {
+    set text(weight: "bold")
+    set align(center)
 
-      [UNIVERSIDADE DO ESTADO DE SANTA CATARINA – UDESC\ ]
-      upper(campus)
+    [UNIVERSIDADE DO ESTADO DE SANTA CATARINA – UDESC\ ]
+    upper(campus)
+    linebreak()
+    upper(departament)
+
+    multiLinebreak(6)
+    upper(author)
+
+    place(horizon + center,
+      upper(title)
+    )
+
+    place(bottom + center, {
+      credit()
       linebreak()
-      upper(departament)
-
-      multiLinebreak(6)
-      upper(author)
-
-      place(horizon + center,
-        upper(title)
-      )
-
-      place(bottom + center, {
-        credit()
-        linebreak()
-        upper(city)
-        linebreak()
-        str(year)
-      })
+      upper(city)
+      linebreak()
+      str(year)
     })
+  })
 
   //Anverso (obverse)
-  let obverse(title, author, observe_text, city, year) = page(numbering: none, {
+  let obversePage(title, author, observe_text, city, year) = page(numbering: none, {
     set align(center)
     set text(weight: "bold")
 
@@ -140,11 +190,11 @@
   })
 
   // Epígrafe (epigraph)
-  let epigraph() = page(numbering: none,
+  let epigraphPage(epigraph_text) = page(numbering: none,
     place(bottom + right,
       box(width: 8cm,
         align(left, {
-          config.epigraph
+          epigraph_text
           multiLinebreak(2)
         })
       )
@@ -152,93 +202,110 @@
   )
 
   //Agradecimento
-  let acknowledgments(acknowledgments_text) = page(numbering: none, {
+  let acknowledgmentsPage(acknowledgments_text) = page(numbering: none, {
     align(center, [*AGRADECIMENTOS*])
-    multiLinebreak(2)
+    multiLinebreak(1)
     parbreak()
     acknowledgments_text
   })
 
-  //Abstract
-  let abstract(text, keywords) = page(
-    numbering: none, {
+  //Resumo (abstract)
+  let abstractPage(text, keywords) = page(numbering: none, {
       set par(leading: 1em, first-line-indent: 0em)
       align(center, [*RESUMO*])
-      multiLinebreak(2)
+      multiLinebreak(1)
       text
-      multiLinebreak(3)
+      multiLinebreak(2)
       [*Palavras-chave*: ];keywords.join("; ");[.]
   })
   
   // Sumários
-  // Sumários dos capítulos e derivados
-  show outline.where(target: selector(heading.where(outlined: true))): it => {
-    show outline.entry: that => {
-       if that.body.has("children") {
-          box({
-            place(box(that.body.children.at(0), width: 3.5em))
-            box([], width: 3.5em)
-            box({
-              that.body.children.at(2) 
-              box(width: 1fr, that.fill)
-              box(width: 0.5em)
-              box(width: 1em,align(left,that.page))
-            }, width: 1fr)
-          }, height: auto)
-        } else {
-          that.body
-          box(width: 1fr, that.fill)
-          box(width: 0.5em)
-          box(width: 1em,align(left,that.page))
-        }
+  
+  set outline(indent: 0em)
+  set outline.entry(fill: repeat([.], gap: 0.1em))
+  show outline: it => {
+    show heading: it => {
+      set align(center)
+      it
+      linebreak()
     }
-    show outline.entry.where(level: 1): it => [
-      *#upper(it)*
-    ]
-    show outline.entry.where(level: 2): it => [
-      #upper(it)
-    ]
-    show outline.entry.where(level: 3): it => [
-     *#it*
-    ]
     it
   }
   
+  // Sumários dos capítulos e derivados
+
+  show outline.where(target: selector(heading)): it => {
+    let elements = query(it.target).filter(el => el.outlined == true and el.numbering != none)
+
+    let min_width_numbering = 0em
+    if elements != () {
+      min_width_numbering = calc.max(..elements.map(el => measure([#numbering(el.numbering, ..counter(heading).at(el.location()))]).width)) + 1em
+    }
+    
+    show outline.entry: that => link(
+      that.element.location(),
+      that.indented(box(that.prefix(), width: min_width_numbering), that.inner()),
+    )
+    show outline.entry.where(level: 1): that => {
+      set text(weight: "bold")
+      upper(that)
+    }
+    show outline.entry.where(level: 2): that => {
+      upper(that)
+    }
+    show outline.entry.where(level: 3): that => {
+      set text(weight: "bold")
+      that
+    }
+    show outline.entry.where(level: 4): that => {
+      emph(that)
+    }
+
+    it
+  }
+
   // Sumário das figuras
+
   show outline.where(target: selector(figure)): it => {
     if query(figure).len() > 0 {
-      show outline.entry: that => {
-        that.body
-        box({
-              box(width: 1fr, that.fill)
-                 box(width: 0.5em)
-              box(width: 1em,align(left,that.page))
-            }, width: 1fr)
-      }
+      show outline.entry: that => link(
+        that.element.location(),
+        that.indented(that.prefix(), that.inner()),
+      )
       it
-      
     }
   }
+
   show outline: set page(numbering: none)
 
+  // Referências
+
+  show bibliography: it => page({
+    set par(first-line-indent: 0em, justify: false)
+    show heading: that => {
+      set align(center)
+      that
+      linebreak()
+    }
+    it
+  }) 
 
   // PARTE PRÉ-TEXTUAL
-  cover(config.title, config.campus, config.departament, config.author, config.city, config.year)
-  obverse(config.title, config.author, config.obverse, config.city, config.year)
-  acknowledgments(config.acknowledgments)
-  abstract(config.abstract, config.keywords)
-  epigraph()
+ 
+  coverPage(title, campus, departament, author, city, year)
+  obversePage(title, author, obverse, city, year)
+  if acknowledgments != none {acknowledgmentsPage(acknowledgments)}
+  if epigraph != none {epigraphPage(epigraph)}
+  abstractPage(abstract, keywords)
   outline(title: [Lista de figuras], target: figure)
-  outline()
-  
+  outline(title: [Sumário])
   
   // PARTE TEXTUAL
+ 
   doc
 
   // PARTE PÓS-TEXTUAl
-  show bibliography: set par(first-line-indent: 0em, justify: false)
+ 
   bibliography("bibliography.bib", title: "Referências", style: "abnt.csl")
   
 }
-
-#let p(ref) = cite(ref, form: "prose")

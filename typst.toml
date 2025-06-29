@@ -1,0 +1,9 @@
+[package]
+name = "UDESC"
+version = "0.1.0"
+entrypoint = "src/lib.typ"
+authors = ["Lucas Vinícius Bublitz"]
+description = "Padrão de trabalhos acadêmicos da UDESC"
+keywords = [""]
+
+[tool]
