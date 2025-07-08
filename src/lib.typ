@@ -1,27 +1,46 @@
 // Modelo para Trabalhos Acadêmicos da UDESC
-// Criado por Lucas Vinícius Bublitz
-// Licença livre nos termos do GNU
-// O autor se reserva ao direito de ser citado quanto parte, ou a integralidade, deste documento for utilizado por terceiros, não assumindo qualquer risco comercial, nem exigindo qualquer.
+// Não é um projeto oficial!
+// Criado por Lucas Vinícius Bublitz.
+// Licença livre nos termos do GNU.
+// Construído com base no Manual para Elaboração de Trabalhados Acadêmicos da Udesc, acessível em https://www.udesc.br/bu/manuais.
 
-#let udesc(
+#let paper-udesc(
+
+  // ARGUMENTOS OBRIGATÓRIOSS
+
   campus: [],
   departament: [],
   author: "",
   title: [],
+  subtitle: [],
   city: [],
-  year: 0,
+  date: (),
   obverse: [],
-  abstract: none,
-  epigraph: none,
-  acknowledgments: none,
   keywords: (),
-  bibliography_path: none,
+  class: "dissertação",
+  advisor: (),
+  foreignAbstract: [],
+  committee: (),
+  foreignKeywords: (),
+
+  // ARGUMENTOS OPCIONAIS
+
+  // Os argumentos com valores padrão 'none' são opcionais.
+  // os elementos textuais que dependem destes não serão impressos
+  
+  acknowledgments: none,
+  epigraph: none,
+  abstract: none,
+  dedication: none,
+
+  // DOCUMENTO
+
   doc
+
 )={
 
-  //Dependências
-  
-  //Formatação básica
+  // FORMATAÇÃO DA PAǴINA
+   
   set page(
     "a4",
     margin: (
@@ -34,6 +53,8 @@
     numbering: "1"
   )
   
+  // ESTILO COMUM DO TEXTO
+
   set par(
     justify: true, 
     leading: 1em,
@@ -46,13 +67,18 @@
     hyphenate: true,
     font: "Liberation Sans"
   ) 
-  set document( //Metadados
+
+  // METADADOS DO DOCUMENTO
+
+  set document( 
     title: title,
     author: author,
-    date: auto
+    date: auto,
+    description: class,
+    keywords: keywords
   )
 
-  // Funções auxiliares
+  // FUNÇÕES AUXILIARES (só utilziadas neste módulo)
   
   let multiLinebreak(n) ={
     for _ in range(0,n) {
@@ -76,10 +102,27 @@
     }
   }
 
-  //Citações
-  //A função nativa quotes() é usada tanto para citações longas quanto para curtas de forma automática.
+  let mininum-width-numbering(target, filter) = {
+    let elements = query(target).filter(filter)
+    if elements != () {
+      return calc.max(..elements.map(el => measure([#numbering(el.numbering, ..counter(heading).at(el.location()))]).width)) + 1em
+    } 
+    1em
+  }
+
+  let mininum-width-page(target) = {
+    let elements = query(target)
+    calc.max(..elements.map(el => measure([#counter(page).at(el.location()).first()]).width)) + 1em
+  }
+
+
+  // CITAÇÃO DIRETA
+
+  // A função nativa 'quotes' é utilizada tanto para citações longas quanto para curtas, de forma automática.
+  // Quando o conteúdo da citação tiver mais de 242 caracteres, o que corresponde mais ou menos a três linhas de texto, 
+  // a função gera um bloco de texto conforme a função 'long-quote', senão, apenas enolve o texto com aspas simples.
   
-  let longQuote(quote_text) = {
+  let long-quote(quote_text) = {
     set text(size: 10pt)
     linebreak()
     pad(
@@ -91,13 +134,23 @@
 
   show quote: it => {
     if to-string(it.body).len() > 242 {
-      longQuote(it.body)
+      long-quote(it.body)
     } else {
       it
     }
   }
    
-  //Títulos (headings)
+  // EQUAÇÕES
+  set math.equation(numbering: "(1)")
+  show math.equation: it=> {
+    set align(left)
+    linebreak()
+    it
+    linebreak()
+  }
+
+  // TÍTULOS (headings)
+
   show heading: set block(above: 2em, below: 2em)
   show heading: it => {
     set text(12pt)
@@ -127,19 +180,19 @@
     [_ #that _]
   }
 
+  // FIGURAS (desenhos, tabelas, imagens, gráficos....)
 
-  // Figuras (tabelas, imagens, gráficos....)
+
+  show figure.where(kind: raw): set figure(supplement: [Código-fonte])
   set figure.caption(position: top)
   show figure: it => {
     show ref: that => [Fonte: #cite(form: "prose", that.target)]
     it
   }
-  // PARTE PRÉ-TEXTUAL
-  
-  let credit() = text(oklch(0%, 0, 0deg, 0%))[Este documento utiliza o Modelo de Trabalhos Acadêmidos tUDESC] 
 
-  //Capa
-  let coverPage(title, campus, departament, author, city, year) = page(numbering: none, {
+  // CAPA
+
+  let cover-page(title, campus, departament, author, city, date) = page(numbering: none, {
     set text(weight: "bold")
     set align(center)
 
@@ -151,21 +204,23 @@
     multiLinebreak(6)
     upper(author)
 
-    place(horizon + center,
+    place(horizon + center,{
       upper(title)
-    )
+      set text(weight: "regular")
+      if subtitle != none {": " + upper(subtitle)}
+    })
 
     place(bottom + center, {
-      credit()
       linebreak()
       upper(city)
       linebreak()
-      str(year)
+      str(date.year)
     })
   })
 
-  //Anverso (obverse)
-  let obversePage(title, author, observe_text, city, year) = page(numbering: none, {
+  // ANVERSO (obverse)
+
+  let obverse-page(title, author, observe, city, date) = page(numbering: none, {
     set align(center)
     set text(weight: "bold")
 
@@ -177,40 +232,125 @@
     pad(left: 8cm,
       align(left,{
         set text(weight: "regular")
-        par(leading: 0.65em, justify: true, first-line-indent: 0em, observe_text)
+        par(leading: 0.65em, justify: true, first-line-indent: 0em, {
+          observe
+          multiLinebreak(2)
+          [Orientador: #advisor.titulation #advisor.name]
+        })
       })
     )
     place(bottom + center, {
-      credit()
       linebreak()
       upper(city)
       linebreak()
-      str(year)
+      str(date.year)
     })
   })
 
-  // Epígrafe (epigraph)
-  let epigraphPage(epigraph_text) = page(numbering: none,
-    place(bottom + right,
-      box(width: 8cm,
-        align(left, {
-          epigraph_text
-          multiLinebreak(2)
-        })
+  // FICHA CATALOGRÁFICA 
+
+  let index-card(author, title, date, advisor, class, departament, city) = page(numbering: none, {
+    let name = author.split(" ")
+    let lastNames = name.pop()
+    let nameAdvisor = advisor.name.split(" ")
+    let lastNamesAdvisor = nameAdvisor.pop()
+
+    place(bottom + center, {
+      rect(width: 85%, stroke: 0.5pt,
+        pad(left: 4em, right: 4em, bottom: 3em, top: 1em)[
+          #set text(size: 10pt, hyphenate: false)
+          #set par(leading: 0.35em, spacing: 0.4em, first-line-indent: 2em, justify: false)
+          #set align(left)
+
+          #lastNames, #name.join(" ")
+
+          #title #{if subtitle != [] [: #subtitle]} / #author. \-\- #date.year
+
+          #context counter(page).final().first() p. \ \
+        
+          Orientador: #advisor.name
+
+          #class (#if class == "Tese" [doutorado] else [mestrado]) \-\- Universidade do Estado de Santa Catarina, #campus, #departament, #city, #date.year. \ \
+          
+          #keywords.enumerate(start: 1).join().map(str).join("."). I. #lastNamesAdvisor, #nameAdvisor.join(" "). II Universidade do Estado de Santa Catarina, #campus, #departament. III Título.
+        ]
       )
+    })
+  }) 
+
+  // FOLHA DE APROVAÇÃO (approval)
+  
+  let approval-page(author, title, subtitle, obverse, advisor, committee, city, date) = page(numbering: none, {
+    set align(center)
+    
+    strong(upper(author))
+    multiLinebreak(2)
+
+    strong(upper(title))
+    if subtitle != [] [: #upper(subtitle)]
+    multiLinebreak(2)
+
+    pad(left: 8cm,
+      align(left,{
+        set text(weight: "regular")
+        par(leading: 0.65em, justify: true, first-line-indent: 0em, obverse)
+      })
+    )
+    multiLinebreak(2)
+
+    [*BANCA EXAMINADORA*]
+    multiLinebreak(3)
+
+    [
+      #advisor.titulation #advisor.name \
+      #advisor.institution
+    ]
+    multiLinebreak(2)
+
+    {
+      set align(left)
+      set par(first-line-indent: 0em)
+      [Membros:]
+    }
+    multiLinebreak(2)
+
+    for member in committee [
+      #member.titulation #member.name \
+      #member.institution
+      #multiLinebreak(4)
+    ]
+
+    [#city, #date.day de #date.month de #date.year.]
+    
+  })
+
+  // EPÍGRAFE (epigraph)
+
+  let epigraph-page(epigraph) = page(numbering: none,
+    place(bottom + left,
+      pad(left: 8cm,{
+          epigraph
+          multiLinebreak(3)
+      })
     )
   )
 
-  //Agradecimento
-  let acknowledgmentsPage(acknowledgments_text) = page(numbering: none, {
+  // DEDICATÓRIA
+
+  let dedication-page(dedication) = epigraph-page(dedication) // A dedocatória tem o mesmo estilo da folha de agradecimento.
+
+  // AGRADECIMENTO
+
+  let acknowledgments-page(acknowledgments_text) = page(numbering: none, {
     align(center, [*AGRADECIMENTOS*])
     multiLinebreak(1)
     parbreak()
     acknowledgments_text
   })
 
-  //Resumo (abstract)
-  let abstractPage(text, keywords) = page(numbering: none, {
+  // RESUMO (abstract)
+
+  let abstract-page(text, keywords) = page(numbering: none, {
       set par(leading: 1em, first-line-indent: 0em)
       align(center, [*RESUMO*])
       multiLinebreak(1)
@@ -218,8 +358,19 @@
       multiLinebreak(2)
       [*Palavras-chave*: ];keywords.join("; ");[.]
   })
-  
-  // Sumários
+
+  // RESUMO EM INGLÊS (abstract)
+
+  let foreign-abstract-page(text, keywords) = page(numbering: none, {
+      set par(leading: 1em, first-line-indent: 0em)
+      align(center, [*ABSTRACT*])
+      multiLinebreak(1)
+      text
+      multiLinebreak(2)
+      [*Keywords*: ];keywords.join("; ");[.]
+  })
+ 
+  // SUMÁRIOS E LISTAS
   
   set outline(indent: 0em)
   set outline.entry(fill: repeat([.], gap: 0.1em))
@@ -232,20 +383,37 @@
     it
   }
   
-  // Sumários dos capítulos e derivados
+  // SUMÁRIO DOS CAPÍTULOS
+
+  show outline: set page(numbering: none)
+
+  show outline: it => {
+    if query(it.target).len() > 0 {it}
+  }
 
   show outline.where(target: selector(heading)): it => {
-    let elements = query(it.target).filter(el => el.outlined == true and el.numbering != none)
+    set par(first-line-indent: 0em)
 
-    let min_width_numbering = 0em
-    if elements != () {
-      min_width_numbering = calc.max(..elements.map(el => measure([#numbering(el.numbering, ..counter(heading).at(el.location()))]).width)) + 1em
-    }
-    
+    let width-numbering = mininum-width-numbering(
+      it.target, 
+      el => el.outlined == true and el.numbering != none
+    )
+    let width-page = mininum-width-page(it.target)
+
     show outline.entry: that => link(
       that.element.location(),
-      that.indented(box(that.prefix(), width: min_width_numbering), that.inner()),
+      {
+        box(width: width-numbering, that.prefix())
+        that.body()
+        box(width: 1fr, that.fill)
+        box(width: width-page,{
+          set align(right)
+          that.page()
+        })
+        linebreak()
+      }
     )
+    
     show outline.entry.where(level: 1): that => {
       set text(weight: "bold")
       upper(that)
@@ -264,21 +432,10 @@
     it
   }
 
-  // Sumário das figuras
-
-  show outline.where(target: selector(figure)): it => {
-    show outline.entry: that => link(
-      that.element.location(),
-      that.indented(that.prefix(), that.inner()),
-    )
-    if query(figure).len() > 0 {it}
-  }
-
-  show outline: set page(numbering: none)
-
-  // Referências
-
-  show bibliography: it => page({
+  // REFERÊNCIAS
+  
+  set bibliography(title: "Referências", style: "associacao-brasileira-de-normas-tecnicas.csl")
+  show bibliography: it => {
     set par(first-line-indent: 0em, justify: false)
     show heading: that => {
       set align(center)
@@ -286,24 +443,30 @@
       linebreak()
     }
     it
-  }) 
+  } 
 
-  // PARTE PRÉ-TEXTUAL
- 
-  coverPage(title, campus, departament, author, city, year)
-  obversePage(title, author, obverse, city, year)
-  if acknowledgments != none {acknowledgmentsPage(acknowledgments)}
-  if epigraph != none {epigraphPage(epigraph)}
-  abstractPage(abstract, keywords)
-  outline(title: [Lista de figuras], target: figure)
+  // PÁGINAS PRÉ-TEXTUAIS
+  // A redundâncias desses argumentos, os mesmos da função principal, possibilita uma futura separação
+  // deste código em múltiplos arquivos.
+  
+  cover-page(title, campus, departament, author, city, date)
+  obverse-page(title, author, obverse, city, date)
+  index-card(author, title, date, advisor, class, departament, city)
+
+  if committee       != ()     {approval-page(author, title, subtitle, obverse, advisor, committee, city, date)}
+  if dedication      != none   {dedication-page(dedication)}
+  if acknowledgments != none   {acknowledgments-page(acknowledgments)}
+  if epigraph        != none   {epigraph-page(epigraph)}
+
+  abstract-page(abstract, keywords)
+  foreign-abstract-page(foreignAbstract, foreignKeywords)
+  outline(title: [Lista de Figuras], target: figure.where(kind: image))
+  outline(title: [Lista de Tabelas], target: figure.where(kind: table))
   outline(title: [Sumário])
   
   // PARTE TEXTUAL
  
   doc
-
-  // PARTE PÓS-TEXTUAl
- 
-  set bibliography(title: "Referências", style: "abnt.csl")
-  
+  // A bibliografia deve ser inserida manualmente.
+  // Desta forma é possível adicionar elementos depois dela, como anexos e apêndices.
 }
