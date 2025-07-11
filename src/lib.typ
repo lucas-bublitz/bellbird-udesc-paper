@@ -65,8 +65,7 @@
   set text(
     size: 12pt,
     lang: "pt",
-    hyphenate: true,
-    font: "Arial"
+    hyphenate: true
   ) 
 
   // METADADOS DO DOCUMENTO

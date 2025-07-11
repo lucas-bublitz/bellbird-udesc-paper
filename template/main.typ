@@ -4,20 +4,24 @@
 // Licença livre nos termos do GNU!
 // Construído com base no Manual para Elaboração de Trabalhados Acadêmicos da Udesc, acessível em https://www.udesc.br/bu/manuais.
 
-// AVISOS
+// AVISOS IMPORTANTES
 // Atualemnte, o typst não fornece uma modo de alterar o código do template que está no @preview.
 // Assim, caso seja necessário aditar os elementos de texto gerados internamente na função do template, 
 // deve-se adicionar o arquivo .typ localmente, que pode ser obtido em https://github.com/lucas-bublitz/udesc/blob/main/src/lib.typ.
-// No webapp, o typst reconhece automaticamente os arquivos de fontes presentes no projeto, localmente, entretanto, a fonte deve ser instalada no sistema para que seja possível sua utilização.
-
-#import "@preview/udesc:0.0.1": paper-udesc
-
-// #import "../src/lib.typ": paper-udesc
+// As fontes Arial e Times New Roman não vêm, por padrão, junto ao compilador do typst, mesmo na versão web, assim é necessário adicioná-las por fora. Pelas diretrizes do 'pacakages', não se permite adicionar fontes externas a templates.
+// No webapp, o typst reconhece automaticamente os arquivos de fontes presentes no projeto, localmente, entretanto, a fonte deve ser instalada no sistema para que seja possível sua utilização (no Windows, constumam vir por padrão).
 
 #import "pacakges.typ": *
 
 #show: codly-init.with()
 #codly(languages: codly-languages)
+
+
+// Definição da ordem de preferência das fontes (ignora as fontes não instaldas, porém gera um warning do compilador)
+#set text(font: ("Arial", "Times New Roman", "STIX Two Text", ))
+
+#import "@preview/udesc:0.0.1": paper-udesc
+// #import "../src/lib.typ": paper-udesc
 
 #show: paper-udesc.with(
   // ARGUMENTOS OBRIGATÓRIOS 
