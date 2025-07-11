@@ -1,5 +1,5 @@
 [package]
-name = "udesc"
+name = "paper-udesc"
 version = "0.0.1"
 entrypoint = "src/lib.typ"
 authors = ["Lucas Vinícius Bublitz <https://bublitz.art.br>"]
