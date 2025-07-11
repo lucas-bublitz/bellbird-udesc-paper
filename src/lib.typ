@@ -1,7 +1,7 @@
 // Modelo para Trabalhos Acadêmicos da UDESC
 // Não é um projeto oficial!
 // Criado por Lucas Vinícius Bublitz.
-// Licença livre nos termos do GNU.
+// Licença livre nos termos do GNU!
 // Construído com base no Manual para Elaboração de Trabalhados Acadêmicos da Udesc, acessível em https://www.udesc.br/bu/manuais.
 
 #let paper-udesc(
@@ -32,6 +32,7 @@
   epigraph: none,
   abstract: none,
   dedication: none,
+  index-card: false,
 
   // DOCUMENTO
 
@@ -65,7 +66,7 @@
     size: 12pt,
     lang: "pt",
     hyphenate: true,
-    font: "Liberation Sans"
+    font: "Arial"
   ) 
 
   // METADADOS DO DOCUMENTO
@@ -249,7 +250,7 @@
 
   // FICHA CATALOGRÁFICA 
 
-  let index-card(author, title, date, advisor, class, departament, city) = page(numbering: none, {
+  let index-card-page(author, title, date, advisor, class, departament, city) = page(numbering: none, {
     let name = author.split(" ")
     let lastNames = name.pop()
     let nameAdvisor = advisor.name.split(" ")
@@ -451,8 +452,8 @@
   
   cover-page(title, campus, departament, author, city, date)
   obverse-page(title, author, obverse, city, date)
-  index-card(author, title, date, advisor, class, departament, city)
-
+ 
+  if index-card {index-card-page(author, title, date, advisor, class, departament, city)}
   if committee       != ()     {approval-page(author, title, subtitle, obverse, advisor, committee, city, date)}
   if dedication      != none   {dedication-page(dedication)}
   if acknowledgments != none   {acknowledgments-page(acknowledgments)}

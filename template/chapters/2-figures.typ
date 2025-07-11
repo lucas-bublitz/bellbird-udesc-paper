@@ -3,10 +3,12 @@
 
 = Figuras
 
-Em Typst, todas as figuras devem ser declaradas utilizando a função ``` figure()``` para que façam parte do escopo de contagem do documento, sendo imagem, tabela, gráfico ou mesmo código fonte. O tipo da figura é determinando automaticamente pelo compilador com base sem seu conteúdo, e posse ser definido, manualmente, por meio do atributo ``` supplement:``` conforme no exemplos seguintes.
+Em Typst, todas as figuras devem ser declaradas utilizando a função ``` figure()``` para que façam parte do escopo de contagem do documento, sendo imagem, tabela, gráfico ou mesmo código fonte. O tipo da figura é determinando automaticamente pelo compilador com base sem seu conteúdo, ou pode ser definido, manualmente, por meio do atributo ``` supplement:``` conforme no exemplos seguintes.
+
+O estilo da referência dentro de figuras é automatizado, de modo que basta adicionar a citação após o conteúdo da figura para se imprimir o texto na forma: "Fonte: #cite(<exemplo>, form: "prose")".
 
 #figure(
-  caption: [Implementação funcional de Fibonacci em Julia],
+  caption: [Implementação funcional de Fibonacci em Julia], [
 
 ```julia
 function naiveFibonacci(n::Integer)::Integer
@@ -19,7 +21,9 @@ function naiveFibonacci(n::Integer)::Integer
   naiveFibonacci(n - 1) + naiveFibonacci(n - 2)
 end
 
-```)
+```
+  @exemplo
+])
 
 #figure(
   caption: [Implementação funcional de Fibonacci em Julia],
