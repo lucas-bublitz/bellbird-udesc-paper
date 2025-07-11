@@ -10,7 +10,7 @@
 // deve-se adicionar o arquivo .typ localmente, que pode ser obtido em https://github.com/lucas-bublitz/udesc/blob/main/src/lib.typ.
 // No webapp, o typst reconhece automaticamente os arquivos de fontes presentes no projeto, localmente, entretanto, a fonte deve ser instalada no sistema para que seja possível sua utilização.
 
-#import "@preview/udesc:0.1.0": paper-udesc
+#import "@preview/udesc:0.0.1": paper-udesc
 
 // #import "../src/lib.typ": paper-udesc
 
