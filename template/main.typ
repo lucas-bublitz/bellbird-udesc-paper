@@ -18,7 +18,7 @@
 
 
 // Definição da ordem de preferência das fontes (ignora as fontes não instaldas, porém gera um warning do compilador)
-#set text(font: ("Arial", "Times New Roman", "STIX Two Text", ))
+#set text(font: ("Arial", "Times New Roman", "STIX Two Text"))
 
 #import "@preview/udesc:0.0.1": paper-udesc
 // #import "../src/lib.typ": paper-udesc
