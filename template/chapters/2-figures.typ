@@ -1,5 +1,5 @@
 
-#import "../pacakges.typ": *
+#import "../imports.typ": *
 
 = Figuras
 
@@ -31,5 +31,13 @@ end
     ```
     asd
     ```
+  ]
+)
+
+#figure(
+  caption: [Uma fotografia do Cairo],
+  [
+    #image("../images/cairo.png")
+    @Werner2010Kairo
   ]
 )
