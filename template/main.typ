@@ -26,7 +26,7 @@
 #show: bellbird-udesc-paper.with(
   // ARGUMENTOS OBRIGATÓRIOS 
   campus: [Centro de Ciências Tecnológicas -- CCT],
-  departament: [Programa de Pós-Graduação em Engenharia Mecânica],
+  department: [Programa de Pós-Graduação em Engenharia Mecânica],
   abstract: lorem(100),
   keywords: ("Primeira", "Segunda", "Terceira"),
   foreign-abstract: lorem(100),
