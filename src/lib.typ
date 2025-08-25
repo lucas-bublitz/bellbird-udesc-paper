@@ -142,7 +142,7 @@
    
   // EQUAÇÕES
   set math.equation(numbering: "(1)")
-  show math.equation: it=> {
+  show math.equation.where(block: true): it=> {
     set align(left)
     linebreak()
     it
